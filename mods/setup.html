@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Установка окружения — Моды — minecraft.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="../mods.html" class="nav-link active">Моды</a>
+      <a href="../resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="../datapacks.html" class="nav-link">Датапаки</a>
+      <a href="../shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="page">
+
+    <div class="breadcrumbs">
+      <a href="../index.html">Главная</a>
+      <span class="sep">/</span>
+      <a href="../mods.html">Моды</a>
+      <span class="sep">/</span>
+      <span class="current">Установка окружения</span>
+    </div>
+
+    <div class="guide-header">
+      <h1>Установка окружения</h1>
+      <p class="lead">Прежде чем писать мод, нужно подготовить инструменты. Это займёт минут 20-30. После этого шага у тебя будет всё, чтобы создавать моды на Fabric для Minecraft 1.21.</p>
+    </div>
+
+    <div class="guide-body">
+
+      <p>Мы будем использовать <strong>Fabric</strong> — это современный загрузчик модов для Minecraft. Он проще и быстрее, чем Forge, и на нём работает большинство визуалов и оптимизационных модов.</p>
+
+      <h2 id="java">1. Java 21</h2>
+
+      <p>Моды пишутся на Java. Minecraft 1.21 требует <strong>Java 21</strong>. Если у тебя установлена другая версия — скорее всего проект не соберётся.</p>
+
+      <h3>Проверь, что у тебя уже есть</h3>
+
+      <p>Открой терминал (Win + R → <code>cmd</code> → Enter) и введи:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">bash</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>java --version</code></pre>
+      </div>
+
+      <p>Если увидишь что-то вроде <code>java 21.0.10</code> — всё отлично, переходи к следующему шагу.</p>
+
+      <div class="callout warn">
+        <strong>Если пишет «java не является внутренней командой»</strong> — Java не установлена или не добавлена в PATH. Тогда устанавливай.
+      </div>
+
+      <h3>Установка JDK 21</h3>
+
+      <p>Качай <strong>Eclipse Temurin JDK 21</strong> — это бесплатная сборка OpenJDK от Adoptium. Она стандартная для Minecraft-разработки.</p>
+
+      <ul>
+        <li>Открой <a href="https://adoptium.net/temurin/releases/?version=21" target="_blank" rel="noopener">adoptium.net</a></li>
+        <li>Выбери <strong>Operating System: Windows</strong>, <strong>Architecture: x64</strong>, <strong>Version: 21 — LTS</strong></li>
+        <li>Скачай <strong>.msi</strong> installer</li>
+        <li>Запусти установщик. В окне «Custom Setup» включи <strong>«Add to PATH»</strong> и <strong>«Set JAVA_HOME variable»</strong></li>
+        <li>Жми Next до конца, установи</li>
+      </ul>
+
+      <p>После установки <strong>закрой и открой терминал заново</strong> (важно — старый терминал не подхватит изменения PATH). И снова проверь:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">bash</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>java --version</code></pre>
+      </div>
+
+      <p>Должно показать <code>openjdk 21.x.x</code>.</p>
+
+      <h2 id="idea">2. IntelliJ IDEA</h2>
+
+      <p>Это среда разработки. В ней ты будешь писать код, собирать и запускать мод. Нужна <strong>Community Edition</strong> — она бесплатная.</p>
+
+      <ul>
+        <li>Открой <a href="https://www.jetbrains.com/idea/download/" target="_blank" rel="noopener">jetbrains.com/idea/download</a></li>
+        <li>Пролистай до <strong>Community Edition</strong> (не Ultimate)</li>
+        <li>Скачай, установи</li>
+        <li>При первом запуске пропусти настройки, оставь всё по умолчанию</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>Альтернатива</strong> — <strong>VS Code</strong> с расширениями для Java. Но для Fabric-модов IntelliJ удобнее: он сам подтягивает Gradle и понимает структуру проекта.
+      </div>
+
+      <h2 id="template">3. Fabric Mod Template</h2>
+
+      <p>Это готовый каркас проекта. Не нужно создавать всё с нуля — генерируешь шаблон и сразу начинаешь писать код.</p>
+
+      <ul>
+        <li>Открой <a href="https://fabricmc.net/develop/template/" target="_blank" rel="noopener">fabricmc.net/develop/template</a></li>
+        <li>Заполни поля:
+          <ul>
+            <li><strong>Mod Name:</strong> MyFirstMod (любое, но латиницей, без пробелов)</li>
+            <li><strong>Package Name:</strong> com.example.myfirstmod (латиница, точка как разделитель)</li>
+            <li><strong>Minecraft Version:</strong> 1.21.4 (или другая, под которую делаешь мод)</li>
+            <li><strong>Mod ID:</strong> myfirstmod (латиница, строчные)</li>
+            <li>Остальное оставь по умолчанию</li>
+          </ul>
+        </li>
+        <li>Нажми <strong>Download Template</strong></li>
+      </ul>
+
+      <p>Скачается ZIP-архив. Распакуй его в папку без пробелов и русских букв в пути. Например:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">путь</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>C:\Projects\MyFirstMod</code></pre>
+      </div>
+
+      <div class="callout warn">
+        <strong>Не размещай проект на рабочем столе или в папках типа «Загрузки».</strong> Если в пути есть пробелы или кириллица, Gradle может не собрать проект.
+      </div>
+
+      <h2 id="open">4. Открыть проект в IDEA</h2>
+
+      <ul>
+        <li>Запусти IntelliJ IDEA</li>
+        <li><strong>File → Open</strong></li>
+        <li>Выбери папку <code>MyFirstMod</code> (именно папку, не файл внутри)</li>
+        <li>Нажми <strong>OK</strong></li>
+        <li>IDEA спросит «Trust Project?» — жми <strong>Trust Project</strong></li>
+      </ul>
+
+      <p>Начнётся импорт Gradle — он подтянет зависимости и исходники Minecraft. Это займёт <strong>5-15 минут</strong> в первый раз. Внизу будет прогресс-бар, не закрывай IDEA.</p>
+
+      <h2 id="sdk">5. Проверка SDK</h2>
+
+      <p>Когда импорт закончится, проверь что используется правильная Java:</p>
+
+      <ul>
+        <li><strong>File → Project Structure</strong> (или Ctrl + Alt + Shift + S)</li>
+        <li>Слева <strong>Project</strong></li>
+        <li>В поле <strong>SDK</strong> должно стоять <strong>21</strong> (например, <code>temurin-21</code> или <code>openjdk-21</code>)</li>
+        <li>Если стоит другая версия — нажми на выпадающий список, выбери <strong>Add SDK → Download JDK</strong>, версия <strong>21</strong>, vendor любой</li>
+        <li><strong>Apply → OK</strong></li>
+      </ul>
+
+      <h2 id="run">6. Первый запуск</h2>
+
+      <p>Убедимся что всё работает. В правом верхнем углу IntelliJ должна быть выпадашка с названием <strong>Minecraft Client</strong> и зелёный треугольник рядом.</p>
+
+      <ul>
+        <li>Нажми на зелёный треугольник <strong>Run</strong></li>
+        <li>Gradle соберёт мод и запустит Minecraft</li>
+        <li>Первый запуск долгий (2-5 минут), потому что скачиваются все ассеты игры</li>
+        <li>Откроется окно Minecraft. Ты в игре — пока без твоего мода, но с рабочей средой</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Если Minecraft запустился</strong> — окружение готово. Можно переходить к следующему гайду и писать код.
+      </div>
+
+      <h2 id="errors">Если что-то пошло не так</h2>
+
+      <h3>Gradle sync failed</h3>
+      <p>Чаще всего это проблема с версией Java. Проверь пункт 5 (SDK 21). Если не помогло — открой вкладку <strong>Build</strong> внизу IDEA, скопируй текст ошибки.</p>
+
+      <h3>Could not set unknown property 'sourceCompatibility'</h3>
+      <p>Проект написан под старую версию Gradle, а IDEA использует новую. Решение: в панели Gradle (справа) → шестерёнка → <strong>Gradle Settings</strong> → <strong>Distribution</strong> поставь <strong>Local installation</strong> → выбери Gradle 8.10 или ниже.</p>
+
+      <h3>java --version показывает не 21</h3>
+      <p>Значит, PATH не обновился. Закрой терминал, открой заново. Если не помогло — перезагрузи компьютер. Windows иногда не подхватывает изменения PATH сразу.</p>
+
+    </div>
+
+    <div class="guide-nav">
+      <a href="../mods.html">
+        <span class="nav-label">← Назад</span>
+        <span class="nav-title">К списку гайдов</span>
+      </a>
+      <a href="first-mod.html" class="next">
+        <span class="nav-label">Далее →</span>
+        <span class="nav-title">Первый мод</span>
+      </a>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
