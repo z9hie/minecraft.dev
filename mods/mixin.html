@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mixin — Моды — minecraft.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="../mods.html" class="nav-link active">Моды</a>
+      <a href="../resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="../datapacks.html" class="nav-link">Датапаки</a>
+      <a href="../shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="page">
+
+    <div class="breadcrumbs">
+      <a href="../index.html">Главная</a>
+      <span class="sep">/</span>
+      <a href="../mods.html">Моды</a>
+      <span class="sep">/</span>
+      <span class="current">Mixin</span>
+    </div>
+
+    <div class="guide-header">
+      <h1>Mixin — что это и зачем</h1>
+      <p class="lead">Mixin — это механизм, через который моды меняют код Minecraft, не имея доступа к его исходникам. Без Mixin не было бы ни одного серьёзного мода. Разбираем как он работает.</p>
+    </div>
+
+    <div class="guide-body">
+
+      <p>Представь: у тебя есть Minecraft в виде скомпилированного <code>.jar</code>-файла. Ты не можешь открыть его, изменить пару строк и сохранить обратно. Но тебе нужно, чтобы игра делала что-то по-другому. Как быть?</p>
+
+      <p>Вот тут и приходит <strong>Mixin</strong>. Это система, которая позволяет «вклиниться» в выполнение методов Minecraft и добавить свой код. Не переписать метод, а именно <strong>вставить свой код в нужное место</strong>.</p>
+
+      <h2 id="analogy">1. Аналогия</h2>
+
+      <p>Представь что Minecraft — это повар, который готовит блюдо по рецепту. Рецепт ты не можешь изменить. Но у тебя есть возможность встать рядом и:</p>
+
+      <ul>
+        <li><strong>Inject (впрыск)</strong> — сказать «стоп, перед тем как добавить соль, положи ещё перец»</li>
+        <li><strong>Redirect (перенаправление)</strong> — сказать «вместо соли используй сахар»</li>
+        <li><strong>Overwrite (перезапись)</strong> — сказать «делай всё то же, но вместо последнего шага сделай вот это»</li>
+        <li><strong>ModifyVariable (изменение переменной)</strong> — сказать «когда возьмёшь 3 яйца, возьми 5»</li>
+      </ul>
+
+      <p>Это всё — разные типы Mixin. Для TargetHUD и большинства визуалов используется <strong>Inject</strong> и <strong>Redirect</strong>.</p>
+
+      <h2 id="example">2. Простой пример</h2>
+
+      <p>Допустим, мы хотим чтобы игра писала в лог каждый раз, когда игрок получает урон. У Minecraft есть класс <code>PlayerEntity</code> с методом <code>damage()</code>. Мы не можем его открыть и изменить. Но можем сделать миксин:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">package</span> com.example.myfirstmod.mixin;
+
+<span class="kw">import</span> net.minecraft.entity.player.PlayerEntity;
+<span class="kw">import</span> org.spongepowered.asm.mixin.Mixin;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.Inject;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.At;
+
+<span class="kw">@Mixin</span>(PlayerEntity.<span class="kw">class</span>)
+<span class="kw">public class</span> <span class="fn">PlayerEntityMixin</span> {
+
+    <span class="kw">@Inject</span>(method = <span class="str">"damage"</span>, at = <span class="kw">@At</span>(<span class="str">"HEAD"</span>))
+    <span class="kw">private void</span> <span class="fn">onDamage</span>(CallbackInfo ci) {
+        System.out.println(<span class="str">"Игрок получил урон!"</span>);
+    }
+}</code></pre>
+      </div>
+
+      <p>Что здесь происходит:</p>
+
+      <ul>
+        <li><code>@Mixin(PlayerEntity.class)</code> — говорим Mixin, что мы «прицепимся» к классу <code>PlayerEntity</code></li>
+        <li><code>@Inject(method = "damage", ...)</code> — говорим что вклиниваемся в метод <code>damage()</code></li>
+        <li><code>at = @At("HEAD")</code> — «в самом начале метода, до того как Minecraft что-либо сделает»</li>
+        <li><code>CallbackInfo ci</code> — параметр, через который можно отменить выполнение метода (если нужно)</li>
+      </ul>
+
+      <p>Теперь каждый раз, когда игрок получает урон, в консоль будет писаться «Игрок получил урон!». Мы <strong>не меняли код Minecraft</strong>, но добавили в него своё поведение.</p>
+
+      <h2 id="at">3. Точки впрыска (At)</h2>
+
+      <p><code>@At</code> определяет, в какое именно место метода мы вклиниваемся. Основные варианты:</p>
+
+      <ul>
+        <li><code>@At("HEAD")</code> — в самое начало метода</li>
+        <li><code>@At("RETURN")</code> — перед каждым <code>return</code></li>
+        <li><code>@At("TAIL")</code> — в конце, после последнего <code>return</code></li>
+        <li><code>@At(value = "INVOKE", target = "...")</code> — перед вызовом конкретного метода</li>
+        <li><code>@At(value = "FIELD", target = "...")</code> — при доступе к полю класса</li>
+      </ul>
+
+      <p>Для TargetHUD, например, нам нужно вклиниваться в метод отрисовки HUD — там <code>@At("HEAD")</code> даёт нам точку, где мы можем нарисовать свой интерфейс поверх.</p>
+
+      <h2 id="json">4. Регистрация миксина</h2>
+
+      <p>Недостаточно просто написать класс с <code>@Mixin</code>. Нужно сказать Fabric, что такой миксин существует. Это делается в файле <code>myfirstmod.mixins.json</code>:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">json</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>{
+  <span class="str">"required"</span>: <span class="kw">true</span>,
+  <span class="str">"package"</span>: <span class="str">"com.example.myfirstmod.mixin"</span>,
+  <span class="str">"compatibilityLevel"</span>: <span class="str">"JAVA_21"</span>,
+  <span class="str">"minVersion"</span>: <span class="str">"0.8"</span>,
+  <span class="str">"mixins"</span>: [
+    <span class="str">"PlayerEntityMixin"</span>
+  ],
+  <span class="str">"client"</span>: [],
+  <span class="str">"injectors"</span>: {
+    <span class="str">"defaultRequire"</span>: <span class="num">1</span>
+  }
+}</code></pre>
+      </div>
+
+      <p>Ключевое — массив <code>mixins</code>. Каждый новый миксин-класс нужно добавить туда по имени. Если класс называется <code>PlayerEntityMixin</code> и лежит в пакете <code>com.example.myfirstmod.mixin</code>, в массив пишем <code>"PlayerEntityMixin"</code>.</p>
+
+      <div class="callout warn">
+        <strong>Если миксин не заработал</strong> — в 90% случаев ты забыл добавить его в <code>mixins.json</code>. Mixin не подхватывает классы автоматически, их нужно регистрировать руками.
+      </div>
+
+      <h2 id="common-errors">5. Частые ошибки</h2>
+
+      <h3>Mixin apply failed</h3>
+      <p>Значит, ты вклиниваешься туда, куда нельзя — например, в метод которого нет или с неправильной сигнатурой. Проверь <code>method = "..."</code>: имя должно точно совпадать с методом в Minecraft.</p>
+
+      <h3>Crash на запуске</h3>
+      <p>Скорее всего, <code>@Mixin(SomeClass.class)</code> ссылается на класс, которого нет в этой версии Minecraft. Или метод вызывается с неправильными параметрами.</p>
+
+      <h3>Миксин применяется, но ничего не делает</h3>
+      <p>Проверь точку впрыска. Если метод не вызывается в нужный момент — твой код тоже не выполнится. Например, вклиниваться в <code>render()</code> бесполезно, если ты хочешь ловить момент урона.</p>
+
+      <h2 id="sources">6. Как узнать что за метод</h2>
+
+      <p>Главная проблема новичка — <strong>непонятно, куда вклиниваться</strong>. Ты знаешь что хочешь «поймать момент когда игрок получает урон», но не знаешь какой метод за это отвечает.</p>
+
+      <p>Решения:</p>
+
+      <ul>
+        <li><strong>Смотри исходники Minecraft.</strong> В IntelliJ есть кнопка <code>genSources</code> в панели Gradle — она скачивает декомпилированные исходники игры, которые можно читать как обычный Java-код</li>
+        <li><strong>Ищи похожие моды на GitHub.</strong> Если хочешь TargetHUD — открой репозиторий мода с TargetHUD и посмотри, в какие методы он вклинивается</li>
+        <li><strong>Читай логи.</strong> Если миксин не применился, Minecraft напишет об этом в лог с указанием класса и метода</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>genSources</strong> — самая полезная команда для разработчика модов. В панели Gradle справа: <code>Tasks → fabric → genSources</code>. После этого все классы Minecraft станут доступны для чтения.
+      </div>
+
+      <h2 id="next">Что дальше</h2>
+
+      <p>Теперь ты знаешь:</p>
+
+      <ul>
+        <li>Что такое Mixin и зачем он нужен</li>
+        <li>Как вклиниваться в методы через <code>@Inject</code></li>
+        <li>Как регистрировать миксины в <code>mixins.json</code></li>
+        <li>Где смотреть исходники Minecraft</li>
+      </ul>
+
+      <p>В следующем гайде мы соберём всё вместе и сделаем <strong>TargetHUD</strong> — мод, который показывает информацию о противнике под прицелом.</p>
+
+    </div>
+
+    <div class="guide-nav">
+      <a href="first-mod.html">
+        <span class="nav-label">← Назад</span>
+        <span class="nav-title">Первый мод</span>
+      </a>
+      <a href="target-hud.html" class="next">
+        <span class="nav-label">Далее →</span>
+        <span class="nav-title">TargetHUD</span>
+      </a>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
