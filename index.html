@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>minecraft.dev — гайды по созданию модов, ресурспаков, датапаков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="mods.html" class="nav-link">Моды</a>
+      <a href="resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="datapacks.html" class="nav-link">Датапаки</a>
+      <a href="shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <h1>Гайды по <span class="accent">Minecraft</span> разработке</h1>
+    <p>Как создавать моды, ресурспаки, датапаки и шейдеры. Пошагово, с кодом и примерами.</p>
+  </section>
+
+  <div class="section-label">Разделы</div>
+  <div class="cards-grid">
+
+    <a href="mods.html" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M5 19l4-4M15 9l4-4"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Моды</div>
+        <div class="card-desc">Fabric, Java, Mixin, TargetHUD. От установки окружения до первого мода.</div>
+      </div>
+      <div class="card-meta">
+        <span>4 гайда</span>
+        <span class="count">начинающим</span>
+      </div>
+    </a>
+
+    <a href="resourcepacks.html" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Ресурспаки</div>
+        <div class="card-desc">Структура папок, текстуры, модели, звуки. Замена ванильных ассетов.</div>
+      </div>
+      <div class="card-meta">
+        <span>скоро</span>
+        <span class="count">в разработке</span>
+      </div>
+    </a>
+
+    <a href="datapacks.html" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Датапаки</div>
+        <div class="card-desc">Рецепты, лут-таблицы, функции, advancements. Логика без модов.</div>
+      </div>
+      <div class="card-meta">
+        <span>скоро</span>
+        <span class="count">в разработке</span>
+      </div>
+    </a>
+
+    <a href="shaders.html" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Шейдеры</div>
+        <div class="card-desc">Iris, OptiFine, GLSL. Как устроен рендер и как писать свои шейдеры.</div>
+      </div>
+      <div class="card-meta">
+        <span>скоро</span>
+        <span class="count">в разработке</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
