@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Первый мод — Моды — minecraft.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="../mods.html" class="nav-link active">Моды</a>
+      <a href="../resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="../datapacks.html" class="nav-link">Датапаки</a>
+      <a href="../shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="page">
+
+    <div class="breadcrumbs">
+      <a href="../index.html">Главная</a>
+      <span class="sep">/</span>
+      <a href="../mods.html">Моды</a>
+      <span class="sep">/</span>
+      <span class="current">Первый мод</span>
+    </div>
+
+    <div class="guide-header">
+      <h1>Первый мод</h1>
+      <p class="lead">Разбираем структуру Fabric-проекта и пишем первый рабочий мод. К концу гайда у тебя будет мод, который выводит сообщение в чат при запуске игры.</p>
+    </div>
+
+    <div class="guide-body">
+
+      <p>Прежде чем лезть в рендер и Mixin — нужно понять, как вообще устроен мод. Мы напишем простой мод, который делает одну вещь: при запуске Minecraft пишет в чат <strong>«Мод загружен»</strong>. Просто, но это рабочий каркас, на который дальше навешивается всё остальное.</p>
+
+      <h2 id="structure">1. Структура проекта</h2>
+
+      <p>Открой папку своего проекта в IntelliJ. Ты увидишь такую структуру:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">структура</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>MyFirstMod/
+├── src/
+│   └── main/
+│       ├── java/
+│       │   └── com/example/myfirstmod/
+│       │       └── MyFirstMod.java      ← главный класс мода
+│       └── resources/
+│           ├── fabric.mod.json          ← описание мода
+│           └── myfirstmod.mixins.json   ← конфиг миксинов (пустой)
+├── build.gradle                          ← настройки сборки
+└── gradle.properties                     ← версии и параметры</code></pre>
+      </div>
+
+      <p>Самое важное — <code>MyFirstMod.java</code>. Это точка входа, с неё Minecraft начинает загрузку твоего мода.</p>
+
+      <h2 id="main-class">2. Главный класс</h2>
+
+      <p>Открой <code>MyFirstMod.java</code>. Ты увидишь примерно такой код:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">package</span> com.example.myfirstmod;
+
+<span class="kw">import</span> net.fabricmc.api.ModInitializer;
+
+<span class="kw">public class</span> <span class="fn">MyFirstMod</span> <span class="kw">implements</span> ModInitializer {
+    <span class="kw">public static final</span> String MOD_ID = <span class="str">"myfirstmod"</span>;
+
+    <span class="kw">@Override</span>
+    <span class="kw">public void</span> <span class="fn">onInitialize</span>() {
+        <span class="cm">// Здесь код, который выполняется при загрузке мода</span>
+    }
+}</code></pre>
+      </div>
+
+      <p>Разберём что тут что:</p>
+
+      <ul>
+        <li><code>package com.example.myfirstmod;</code> — пакет, определяет где лежат твои классы</li>
+        <li><code>implements ModInitializer</code> — говорит Fabric, что это точка входа мода</li>
+        <li><code>MOD_ID</code> — уникальный идентификатор мода (тот, что ты указывал в шаблоне)</li>
+        <li><code>onInitialize()</code> — метод, который Fabric вызывает один раз при запуске игры</li>
+      </ul>
+
+      <p>Всё, что ты напишешь в <code>onInitialize()</code>, выполнится при загрузке мода. Это идеальное место чтобы зарегистрировать блоки, предметы, события.</p>
+
+      <h2 id="logger">3. Добавляем лог</h2>
+
+      <p>Вместо того чтобы сразу писать в чат (это чуть сложнее), начнём с лога. Это стандартный способ проверить что мод загрузился.</p>
+
+      <p>Добавь логгер и напиши в него сообщение:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">package</span> com.example.myfirstmod;
+
+<span class="kw">import</span> net.fabricmc.api.ModInitializer;
+<span class="kw">import</span> org.slf4j.Logger;
+<span class="kw">import</span> org.slf4j.LoggerFactory;
+
+<span class="kw">public class</span> <span class="fn">MyFirstMod</span> <span class="kw">implements</span> ModInitializer {
+    <span class="kw">public static final</span> String MOD_ID = <span class="str">"myfirstmod"</span>;
+    <span class="kw">public static final</span> Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    <span class="kw">@Override</span>
+    <span class="kw">public void</span> <span class="fn">onInitialize</span>() {
+        LOGGER.info(<span class="str">"Мод MyFirstMod загружен!"</span>);
+    }
+}</code></pre>
+      </div>
+
+      <p><code>LOGGER.info()</code> — метод, который выводит сообщение в консоль. Не в чат игры, а в лог — то что видно в терминале, откуда ты запускал Minecraft.</p>
+
+      <h2 id="test">4. Запускаем и проверяем</h2>
+
+      <ul>
+        <li>В правом верхнем углу IntelliJ выбери конфигурацию <strong>Minecraft Client</strong></li>
+        <li>Нажми зелёный треугольник <strong>Run</strong></li>
+        <li>Дождись запуска Minecraft</li>
+        <li>Посмотри в нижнюю панель IntelliJ — там будет лог запуска</li>
+      </ul>
+
+      <p>Найди в логе строку:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">лог</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>[main/INFO]: Мод MyFirstMod загружен!</code></pre>
+      </div>
+
+      <div class="callout">
+        <strong>Если видишь эту строку</strong> — твой первый мод работает. Поздравляю.
+      </div>
+
+      <h2 id="chat">5. Пишем в чат игры</h2>
+
+      <p>Лог — это хорошо, но интереснее вывести сообщение прямо в игре. Правда, есть нюанс: в момент загрузки мода игрок ещё не зашёл в мир. Поэтому сообщение в чат пишут <strong>после входа в мир</strong> — через событие.</p>
+
+      <p>Fabric предоставляет <code>ClientPlayConnectionEvents.JOIN</code> — событие, которое срабатывает когда игрок подключается к серверу или заходит в мир.</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">package</span> com.example.myfirstmod;
+
+<span class="kw">import</span> net.fabricmc.api.ClientModInitializer;
+<span class="kw">import</span> net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+<span class="kw">import</span> net.minecraft.text.Text;
+<span class="kw">import</span> org.slf4j.Logger;
+<span class="kw">import</span> org.slf4j.LoggerFactory;
+
+<span class="kw">public class</span> <span class="fn">MyFirstMod</span> <span class="kw">implements</span> ClientModInitializer {
+    <span class="kw">public static final</span> String MOD_ID = <span class="str">"myfirstmod"</span>;
+    <span class="kw">public static final</span> Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    <span class="kw">@Override</span>
+    <span class="kw">public void</span> <span class="fn">onInitializeClient</span>() {
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -&gt; {
+            <span class="kw">if</span> (client.player != <span class="kw">null</span>) {
+                client.player.sendMessage(Text.literal(<span class="str">"§aМод MyFirstMod загружен!"</span>), <span class="kw">false</span>);
+            }
+        });
+    }
+}</code></pre>
+      </div>
+
+      <p>Разберём что изменилось:</p>
+
+      <ul>
+        <li><code>ModInitializer</code> → <code>ClientModInitializer</code> — мод только клиентский, не для сервера</li>
+        <li><code>onInitialize()</code> → <code>onInitializeClient()</code> — метод для клиентской инициализации</li>
+        <li><code>ClientPlayConnectionEvents.JOIN</code> — событие входа в мир</li>
+        <li><code>Text.literal("§a...")</code> — текст, где <code>§a</code> это цветовой код (зелёный)</li>
+        <li><code>sendMessage(..., false)</code> — отправить сообщение, <code>false</code> значит «не в actionbar»</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>Про цвета в Minecraft</strong> — символ <code>§</code> (параграф) задаёт цвет текста. <code>§a</code> — зелёный, <code>§c</code> — красный, <code>§e</code> — жёлтый, <code>§b</code> — голубой. Полный список есть в вики Minecraft.
+      </div>
+
+      <h2 id="check">6. Проверяем</h2>
+
+      <p>Запусти игру заново (Run). Зайди в любой мир. В чате должно появиться зелёное сообщение «Мод MyFirstMod загружен!».</p>
+
+      <div class="callout">
+        <strong>Если сообщение появилось</strong> — ты освоил базу. Теперь можно переходить к Mixin — это то, через что делаются все крутые моды, включая TargetHUD.
+      </div>
+
+      <h2 id="next-steps">Что дальше</h2>
+
+      <p>Сейчас мод делает только одно. Но у тебя есть каркас:</p>
+
+      <ul>
+        <li>Точка входа — <code>ClientModInitializer</code></li>
+        <li>События — <code>ClientPlayConnectionEvents</code></li>
+        <li>Логирование — <code>LOGGER</code></li>
+        <li>Работа с текстом — <code>Text.literal</code></li>
+      </ul>
+
+      <p>Дальше можно вешать любые события: нажатие клавиш, каждый тик игры, отрисовку HUD. Это всё — через <code>fabric-api</code>, который уже подключён в проекте.</p>
+
+    </div>
+
+    <div class="guide-nav">
+      <a href="setup.html">
+        <span class="nav-label">← Назад</span>
+        <span class="nav-title">Установка окружения</span>
+      </a>
+      <a href="mixin.html" class="next">
+        <span class="nav-label">Далее →</span>
+        <span class="nav-title">Mixin — что это и зачем</span>
+      </a>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
