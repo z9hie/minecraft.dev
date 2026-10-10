@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TargetHUD — Моды — minecraft.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="../mods.html" class="nav-link active">Моды</a>
+      <a href="../resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="../datapacks.html" class="nav-link">Датапаки</a>
+      <a href="../shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="page">
+
+    <div class="breadcrumbs">
+      <a href="../index.html">Главная</a>
+      <span class="sep">/</span>
+      <a href="../mods.html">Моды</a>
+      <span class="sep">/</span>
+      <span class="current">TargetHUD</span>
+    </div>
+
+    <div class="guide-header">
+      <h1>TargetHUD</h1>
+      <p class="lead">Собираем всё вместе: находим цель под прицелом, вытаскиваем данные о ней и рисуем панель на экране. Тот самый мод, который показывает HP, ник и расстояние до противника.</p>
+    </div>
+
+    <div class="guide-body">
+
+      <p>TargetHUD — это классика PvP-модов. Когда ты наводишь прицел на игрока, в углу экрана появляется панель с его ником, здоровьем, бронёй, предметом во второй руке и расстоянием до него. Разберём как это делается по шагам.</p>
+
+      <h2 id="plan">1. План</h2>
+
+      <p>Мод делает три вещи:</p>
+
+      <ol>
+        <li><strong>Определяет цель</strong> — кто под прицелом прямо сейчас</li>
+        <li><strong>Собирает данные</strong> — HP, ник, второй предмет, расстояние</li>
+        <li><strong>Рисует панель</strong> — в углу экрана, каждый кадр</li>
+      </ol>
+
+      <p>У нас будет два класса: <code>TargetHudRenderer</code> для отрисовки и <code>TargetHudClient</code> для инициализации. Плюс миксин, чтобы вклиниться в момент отрисовки HUD Minecraft.</p>
+
+      <h2 id="target">2. Определяем цель</h2>
+
+      <p>У Minecraft есть встроенная система «на что смотрит игрок» — <code>crosshairTarget</code>. Она возвращает то, на что наведён прицел: блок, сущность или воздух.</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">import</span> net.minecraft.client.MinecraftClient;
+<span class="kw">import</span> net.minecraft.entity.Entity;
+<span class="kw">import</span> net.minecraft.entity.player.PlayerEntity;
+<span class="kw">import</span> net.minecraft.util.hit.EntityHitResult;
+<span class="kw">import</span> net.minecraft.util.hit.HitResult;
+
+<span class="kw">public class</span> <span class="fn">TargetHudRenderer</span> {
+
+    <span class="kw">public static</span> PlayerEntity <span class="fn">getTargetPlayer</span>() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        <span class="kw">if</span> (client.crosshairTarget == <span class="kw">null</span>) <span class="kw">return null</span>;
+        <span class="kw">if</span> (client.crosshairTarget.getType() != HitResult.Type.ENTITY) <span class="kw">return null</span>;
+
+        Entity entity = ((EntityHitResult) client.crosshairTarget).getEntity();
+        <span class="kw">if</span> (!(entity <span class="kw">instanceof</span> PlayerEntity)) <span class="kw">return null</span>;
+        <span class="kw">if</span> (entity == client.player) <span class="kw">return null</span>;
+
+        <span class="kw">return</span> (PlayerEntity) entity;
+    }
+}</code></pre>
+      </div>
+
+      <p>Что тут происходит:</p>
+
+      <ul>
+        <li><code>MinecraftClient.getInstance()</code> — получаем текущий клиент игры</li>
+        <li><code>client.crosshairTarget</code> — то, на что смотрит прицел</li>
+        <li>Проверяем тип <code>HitResult.Type.ENTITY</code> — значит наведён на сущность</li>
+        <li>Приводим к <code>EntityHitResult</code> и получаем саму сущность</li>
+        <li>Проверяем что это <code>PlayerEntity</code> и что это не сам игрок</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Важный нюанс.</strong> <code>crosshairTarget</code> работает только на ванильной дальности — примерно 4.5 блока. Если хочешь видеть цель на 30 блоках (как ты просил другу), нужно делать свой raycast. Про это в конце гайда.
+      </div>
+
+      <h2 id="data">3. Собираем данные</h2>
+
+      <p>Теперь когда у нас есть <code>PlayerEntity</code>, вытаскиваем всё что нужно:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code>PlayerEntity target = getTargetPlayer();
+<span class="kw">if</span> (target == <span class="kw">null</span>) <span class="kw">return</span>;
+
+<span class="cm">// Ник</span>
+String name = target.getName().getString();
+
+<span class="cm">// Здоровье</span>
+<span class="kw">float</span> health = target.getHealth();
+<span class="kw">float</span> maxHealth = target.getMaxHealth();
+<span class="kw">float</span> healthPercent = health / maxHealth;
+
+<span class="cm">// Броня</span>
+<span class="kw">int</span> armor = target.getArmor();
+
+<span class="cm">// Предмет во второй руке</span>
+ItemStack offHand = target.getOffHandStack();
+<span class="kw">boolean</span> hasOffHand = !offHand.isEmpty();
+
+<span class="cm">// Расстояние</span>
+<span class="kw">double</span> distance = MinecraftClient.getInstance().player.distanceTo(target);</code></pre>
+      </div>
+
+      <p>Все эти методы есть в <code>PlayerEntity</code> и <code>LivingEntity</code> — родительском классе. Ты можешь смотреть их в исходниках Minecraft через <code>genSources</code>.</p>
+
+      <h2 id="render">4. Рисуем панель</h2>
+
+      <p>Отрисовка — самая объёмная часть. Для неё используется <code>DrawContext</code> — класс, который предоставляет методы рисования: <code>fill()</code>, <code>drawText()</code>, <code>drawItem()</code>.</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">import</span> net.minecraft.client.gui.DrawContext;
+<span class="kw">import</span> net.minecraft.client.MinecraftClient;
+
+<span class="kw">public static void</span> <span class="fn">render</span>(DrawContext context) {
+    PlayerEntity target = getTargetPlayer();
+    <span class="kw">if</span> (target == <span class="kw">null</span>) <span class="kw">return</span>;
+
+    MinecraftClient client = MinecraftClient.getInstance();
+    <span class="kw">int</span> screenWidth = context.getScaledWindowWidth();
+
+    <span class="cm">// Размеры панели</span>
+    <span class="kw">int</span> panelWidth = 150;
+    <span class="kw">int</span> panelHeight = 52;
+
+    <span class="cm">// Позиция — правый верхний угол с отступом</span>
+    <span class="kw">int</span> x = screenWidth - panelWidth - 12;
+    <span class="kw">int</span> y = 12;
+
+    <span class="cm">// Фон панели (чёрный с прозрачностью)</span>
+    context.fill(x, y, x + panelWidth, y + panelHeight, 0xC0101010);
+
+    <span class="cm">// Ник</span>
+    context.drawText(
+        client.textRenderer,
+        target.getName().getString(),
+        x + 8, y + 6,
+        0xFFFFFFFF,
+        <span class="kw">true</span>
+    );
+
+    <span class="cm">// Полоска здоровья</span>
+    <span class="kw">float</span> health = target.getHealth();
+    <span class="kw">float</span> maxHealth = target.getMaxHealth();
+    <span class="kw">float</span> ratio = health / maxHealth;
+    <span class="kw">int</span> barWidth = panelWidth - 16;
+    <span class="kw">int</span> barX = x + 8;
+    <span class="kw">int</span> barY = y + 22;
+
+    <span class="cm">// Фон полоски</span>
+    context.fill(barX, barY, barX + barWidth, barY + 4, 0xFF2A2A2A);
+    <span class="cm">// Заполнение (красный)</span>
+    context.fill(barX, barY, barX + (<span class="kw">int</span>)(barWidth * ratio), barY + 4, 0xFFFF5555);
+
+    <span class="cm">// HP числом</span>
+    String hp = String.format(<span class="str">"%.1f / %.1f"</span>, health, maxHealth);
+    context.drawText(client.textRenderer, hp, barX, barY + 8, 0xFFDDDDDD, <span class="kw">true</span>);
+
+    <span class="cm">// Расстояние</span>
+    <span class="kw">double</span> distance = client.player.distanceTo(target);
+    String dist = String.format(<span class="str">"%.1f м"</span>, distance);
+    context.drawText(client.textRenderer, dist, x + panelWidth - 42, barY + 8, 0xFFAAAAAA, <span class="kw">true</span>);
+}</code></pre>
+      </div>
+
+      <p>Ключевые методы <code>DrawContext</code>:</p>
+
+      <ul>
+        <li><code>fill(x1, y1, x2, y2, color)</code> — залить прямоугольник цветом</li>
+        <li><code>drawText(renderer, text, x, y, color, shadow)</code> — нарисовать текст</li>
+        <li><code>drawItem(stack, x, y)</code> — нарисовать предмет</li>
+      </ul>
+
+      <p>Цвета задаются в формате <code>0xAARRGGBB</code>: альфа, красный, зелёный, синий. <code>0xC0101010</code> — это чёрный с прозрачностью 75%.</p>
+
+      <h2 id="hook">5. Как вызвать render</h2>
+
+      <p>Метод <code>render()</code> сам себя не вызовет. Нужно вклиниться в момент, когда Minecraft рисует HUD. Тут нам помогает Mixin.</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">package</span> com.example.myfirstmod.mixin;
+
+<span class="kw">import</span> com.example.myfirstmod.TargetHudRenderer;
+<span class="kw">import</span> net.minecraft.client.gui.hud.InGameHud;
+<span class="kw">import</span> net.minecraft.client.gui.DrawContext;
+<span class="kw">import</span> org.spongepowered.asm.mixin.Mixin;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.Inject;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+<span class="kw">import</span> org.spongepowered.asm.mixin.injection.At;
+
+<span class="kw">@Mixin</span>(InGameHud.<span class="kw">class</span>)
+<span class="kw">public class</span> <span class="fn">InGameHudMixin</span> {
+
+    <span class="kw">@Inject</span>(method = <span class="str">"render"</span>, at = <span class="kw">@At</span>(<span class="str">"TAIL"</span>))
+    <span class="kw">private void</span> <span class="fn">onRenderHud</span>(DrawContext context, <span class="kw">float</span> tickDelta, CallbackInfo ci) {
+        TargetHudRenderer.render(context);
+    }
+}</code></pre>
+      </div>
+
+      <p>Разбор:</p>
+
+      <ul>
+        <li><code>@Mixin(InGameHud.class)</code> — вклиниваемся в класс HUD игры</li>
+        <li><code>method = "render"</code> — в метод отрисовки HUD</li>
+        <li><code>@At("TAIL")</code> — в конец метода, после того как Minecraft нарисовал свой HUD</li>
+        <li>Параметры метода должны совпадать с оригиналом: <code>DrawContext</code> и <code>float tickDelta</code></li>
+      </ul>
+
+      <p>Теперь каждый кадр, после отрисовки ванильного HUD, вызывается наш <code>TargetHudRenderer.render()</code>. И поверх всего рисуется панель с информацией о цели.</p>
+
+      <div class="callout warn">
+        <strong>Не забудь зарегистрировать миксин</strong> в <code>myfirstmod.mixins.json</code> — добавь <code>"InGameHudMixin"</code> в массив <code>mixins</code>. Без этого ничего не заработает.
+      </div>
+
+      <h2 id="register">6. Регистрация в главном классе</h2>
+
+      <p>Осталось только сказать моду, что мы используем <code>TargetHudRenderer</code>. В главном классе:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">public class</span> <span class="fn">MyFirstMod</span> <span class="kw">implements</span> ClientModInitializer {
+    <span class="kw">public static final</span> String MOD_ID = <span class="str">"myfirstmod"</span>;
+
+    <span class="kw">@Override</span>
+    <span class="kw">public void</span> <span class="fn">onInitializeClient</span>() {
+        LOGGER.info(<span class="str">"TargetHUD загружен"</span>);
+    }
+}</code></pre>
+      </div>
+
+      <p>Вся логика уже в миксине — он сам вызовет render. Главный класс нужен только для загрузки мода.</p>
+
+      <h2 id="test">7. Тестируем</h2>
+
+      <ul>
+        <li>Запусти игру через <strong>Run</strong></li>
+        <li>Зайди в мир, поставь рядом второго игрока (или моба — но у нас фильтр на <code>PlayerEntity</code>, так что нужен именно игрок)</li>
+        <li>Наведи прицел на игрока — в правом верхнем углу появится панель</li>
+        <li>Убери прицел — панель исчезнет</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Если панель появилась</strong> — у тебя рабочий TargetHUD. Это уже полноценный мод, можно показывать другу.
+      </div>
+
+      <h2 id="distance">8. Расстояние до 30 блоков</h2>
+
+      <p>Сейчас панель показывает только того, кто в ванильной дальности прицела (~4.5 блока). Если хочешь видеть цель на 30 блоках — нужно делать свой raycast.</p>
+
+      <p>Идея такая:</p>
+
+      <ol>
+        <li>Берём позицию глаз игрока и направление взгляда</li>
+        <li>Путем перебора всех игроков в радиусе 30 блоков находим тех, кто близок к лучу взгляда</li>
+        <li>Из них выбираем самого близкого к центру прицела</li>
+      </ol>
+
+      <p>Примерный код:</p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="code-lang">java</span>
+          <button class="code-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Копировать
+          </button>
+        </div>
+        <pre><code><span class="kw">public static</span> PlayerEntity <span class="fn">findPlayerInSight</span>(<span class="kw">double</span> maxDistance) {
+    MinecraftClient client = MinecraftClient.getInstance();
+    <span class="kw">if</span> (client.player == <span class="kw">null</span> || client.world == <span class="kw">null</span>) <span class="kw">return null</span>;
+
+    Vec3d eyes = client.player.getEyePos();
+    Vec3d look = client.player.getRotationVec(1.0f);
+
+    PlayerEntity best = <span class="kw">null</span>;
+    <span class="kw">double</span> bestDot = 0.97; <span class="cm">// порог "прицеливания"</span>
+
+    <span class="kw">for</span> (PlayerEntity player : client.world.getPlayers()) {
+        <span class="kw">if</span> (player == client.player) <span class="kw">continue</span>;
+
+        Vec3d toPlayer = player.getPos().add(0, player.getHeight() / 2.0, 0).subtract(eyes);
+        <span class="kw">double</span> distance = toPlayer.length();
+        <span class="kw">if</span> (distance &gt; maxDistance) <span class="kw">continue</span>;
+
+        Vec3d toPlayerNorm = toPlayer.normalize();
+        <span class="kw">double</span> dot = look.dotProduct(toPlayerNorm);
+
+        <span class="kw">if</span> (dot &gt; bestDot) {
+            bestDot = dot;
+            best = player;
+        }
+    }
+    <span class="kw">return</span> best;
+}</code></pre>
+      </div>
+
+      <p>Здесь мы используем скалярное произведение векторов (<code>dotProduct</code>). Если оно близко к 1 — значит направление взгляда и направление на игрока почти совпадают. Порог <code>0.97</code> даёт угол примерно 14 градусов — довольно точное прицеливание.</p>
+
+      <div class="callout info">
+        <strong>Можно двигать порог.</strong> Хочешь более точное наведение — ставь <code>0.99</code>. Хочешь ловить цель даже при неточном прицеле — <code>0.95</code>. Экспериментируй.
+      </div>
+
+      <h2 id="next-steps">Что дальше</h2>
+
+      <p>У тебя есть рабочий TargetHUD. Что можно добавить:</p>
+
+      <ul>
+        <li><strong>Отображение предмета во второй руке</strong> — через <code>context.drawItem()</code></li>
+        <li><strong>Иконки брони</strong> — у каждой части своя текстура</li>
+        <li><strong>Цвет полоски HP</strong> — зелёный при полном, красный при низком</li>
+        <li><strong>Анимация появления</strong> — панель плавно выезжает</li>
+        <li><strong>Настройки в меню мода</strong> — через <code>ModMenu</code> и <code>Cloth Config</code></li>
+      </ul>
+
+      <p>Всё это — уже доработки, основа у тебя есть. Если что-то не заработало — смотри лог, там Mixin пишет причину.</p>
+
+    </div>
+
+    <div class="guide-nav">
+      <a href="mixin.html">
+        <span class="nav-label">← Назад</span>
+        <span class="nav-title">Mixin — что это и зачем</span>
+      </a>
+      <a href="../mods.html" class="next">
+        <span class="nav-label">К списку →</span>
+        <span class="nav-title">Все гайды по модам</span>
+      </a>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="../js/main.js"></script>
+</body>
+</html>
