@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моды — minecraft.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">M</div>
+      minecraft<span>.dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="mods.html" class="nav-link active">Моды</a>
+      <a href="resourcepacks.html" class="nav-link">Ресурспаки</a>
+      <a href="datapacks.html" class="nav-link">Датапаки</a>
+      <a href="shaders.html" class="nav-link">Шейдеры</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="page">
+    <div class="breadcrumbs">
+      <a href="index.html">Главная</a>
+      <span class="sep">/</span>
+      <span class="current">Моды</span>
+    </div>
+
+    <div class="guide-header" style="border:none;padding:0;margin-bottom:0">
+      <h1>Моды для Minecraft</h1>
+      <p class="lead">Как создать свой мод на Fabric. От установки Java и IntelliJ IDEA до первого работающего TargetHUD.</p>
+    </div>
+
+    <div class="guide-list">
+
+      <a href="mods/setup.html" class="guide-item">
+        <span class="guide-num">01</span>
+        <div class="guide-info">
+          <div class="guide-title">Установка окружения</div>
+          <div class="guide-desc">Java 21, IntelliJ IDEA, Fabric Mod Template. Всё что нужно перед первым модом.</div>
+        </div>
+        <span class="guide-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a href="mods/first-mod.html" class="guide-item">
+        <span class="guide-num">02</span>
+        <div class="guide-info">
+          <div class="guide-title">Первый мод</div>
+          <div class="guide-desc">Структура проекта, ModInitializer, регистрация, сборка и запуск.</div>
+        </div>
+        <span class="guide-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a href="mods/mixin.html" class="guide-item">
+        <span class="guide-num">03</span>
+        <div class="guide-info">
+          <div class="guide-title">Mixin — что это и зачем</div>
+          <div class="guide-desc">Как моды внедряются в код Minecraft. Inject, Redirect, @At.</div>
+        </div>
+        <span class="guide-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a href="mods/target-hud.html" class="guide-item">
+        <span class="guide-num">04</span>
+        <div class="guide-info">
+          <div class="guide-title">TargetHUD</div>
+          <div class="guide-desc">Как найти цель, собрать данные и нарисовать панель на экране.</div>
+        </div>
+        <span class="guide-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 minecraft.dev · Демо-проект</div>
+    <div>Сделано <a href="https://t.me/rustylog">@rustylog</a></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+  <span id="toastText">Готово</span>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
